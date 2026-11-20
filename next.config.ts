@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  /*
+   * Cache Components — для сайтов, которые кешируют данные с сервера.
+   * У нас нет сервера и запросов за данными (всё в seed.ts и localStorage),
+   * поэтому эта функция только мешает — отключаем её.
+   */
   turbopack: {
     rules: {
       "*.css": {
