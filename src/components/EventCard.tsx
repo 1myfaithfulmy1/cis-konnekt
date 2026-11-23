@@ -15,7 +15,12 @@ export function EventCard({ event }: { event: CisEvent }) {
       href={`/event/${event.id}`}
       className="block overflow-hidden rounded-2xl border border-border bg-surface transition-transform duration-150 active:scale-[0.98]"
     >
-      <EventCover genre={event.genre} title={event.title} size="card" />
+      <EventCover
+        genre={event.genre}
+        title={event.title}
+        coverImageUrl={event.coverImageUrl}
+        size="card"
+      />
 
       <div className="space-y-2 p-4">
         <div className="flex items-center justify-between gap-2">

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { GENRE_META } from "@/data/genres";
 import type { Genre } from "@/types";
 
@@ -34,10 +35,12 @@ function GenreShape({ genre }: { genre: Genre }) {
 export function EventCover({
   genre,
   title,
+  coverImageUrl,
   size = "card",
 }: {
   genre: Genre;
   title: string;
+  coverImageUrl?: string;
   size?: "card" | "detail";
 }) {
   return (
@@ -46,11 +49,20 @@ export function EventCover({
         size === "detail" ? "aspect-[4/3]" : "aspect-[16/11]"
       }`}
     >
-      <GenreShape genre={genre} />
+      {coverImageUrl ? (
+        <>
+          {/* unoptimized — фото уже своё, сжатое и лежит прямо в localStorage (data-URL),
+              через обычный сервер оптимизации картинок Next.js его не пропустить. */}
+          <Image src={coverImageUrl} alt="" fill unoptimized className="object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+        </>
+      ) : (
+        <GenreShape genre={genre} />
+      )}
       <h2
-        className={`relative p-4 font-display font-bold leading-snug text-foreground ${
-          size === "detail" ? "text-2xl" : "line-clamp-2 text-lg"
-        }`}
+        className={`relative p-4 font-display font-bold leading-snug ${
+          coverImageUrl ? "text-white" : "text-foreground"
+        } ${size === "detail" ? "text-2xl" : "line-clamp-2 text-lg"}`}
       >
         {title}
       </h2>

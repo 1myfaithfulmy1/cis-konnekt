@@ -112,6 +112,9 @@ export const ru = {
     formInvalidPrice: "Цена не может быть отрицательной",
 
     fieldTitle: "Название",
+    fieldCoverImage: "Фото обложки (необязательно)",
+    coverImageHint: "Если не загрузишь — будет текстовая обложка, как у остальных событий",
+    removePhoto: "Убрать фото",
     fieldVenue: "Площадка",
     fieldAddress: "Адрес",
     fieldMetro: "Метро",

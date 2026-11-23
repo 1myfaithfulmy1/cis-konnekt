@@ -46,6 +46,7 @@ export interface CisEvent {
   isPrivate: boolean;
   accessCode?: string; // только для закрытых событий
   friendsGoingIds: string[]; // id друзей, которые идут (стартовые данные)
+  coverImageUrl?: string; // своя фотография обложки (data-URL из localStorage); нет — обложка текстовая
 }
 
 export interface DemoUser {

@@ -145,7 +145,12 @@ function EventDetailView({
 
       {shareMessage ? <p className="px-4 text-xs text-accent">{shareMessage}</p> : null}
 
-      <EventCover genre={event.genre} title={event.title} size="detail" />
+      <EventCover
+        genre={event.genre}
+        title={event.title}
+        coverImageUrl={event.coverImageUrl}
+        size="detail"
+      />
 
       <div className="space-y-5 px-4 pt-4">
         <div className="flex items-center justify-between gap-2">

@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import { useState, type FormEvent } from "react";
 import { ru } from "@/content/ru";
 import { GENRE_OPTIONS } from "@/data/genres";
 import { DISTRICTS } from "@/data/districts";
+import { resizeImageToDataUrl } from "@/lib/image";
 import type { CisEvent, Genre } from "@/types";
 
 function Field({
@@ -57,8 +59,28 @@ export function EventForm({
   const [ticketUrl, setTicketUrl] = useState(initial?.ticketUrl ?? "");
   const [isPrivate, setIsPrivate] = useState(initial?.isPrivate ?? false);
   const [accessCode, setAccessCode] = useState(initial?.accessCode ?? "");
+  const [coverImageUrl, setCoverImageUrl] = useState<string | undefined>(initial?.coverImageUrl);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // чтобы можно было выбрать тот же файл повторно
+    if (!file) return;
+
+    setImageError(null);
+    setImageLoading(true);
+    try {
+      const dataUrl = await resizeImageToDataUrl(file);
+      setCoverImageUrl(dataUrl);
+    } catch {
+      setImageError("Не получилось загрузить это фото — попробуй другое");
+    } finally {
+      setImageLoading(false);
+    }
+  }
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -101,6 +123,7 @@ export function EventForm({
       isPrivate,
       accessCode: isPrivate ? accessCode.trim() : undefined,
       friendsGoingIds: initial?.friendsGoingIds ?? [],
+      coverImageUrl,
     };
 
     onSave(event);
@@ -118,6 +141,35 @@ export function EventForm({
       <Field label={ru.cabinet.fieldTitle} error={errors.title}>
         <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} />
       </Field>
+
+      <div className="space-y-1.5">
+        <span className="text-sm font-medium text-foreground">{ru.cabinet.fieldCoverImage}</span>
+
+        {coverImageUrl ? (
+          <div className="relative aspect-[16/11] w-full overflow-hidden rounded-xl border border-border">
+            <Image src={coverImageUrl} alt="" fill unoptimized className="object-cover" />
+          </div>
+        ) : null}
+
+        <div className="flex gap-2">
+          <label className="flex min-h-[44px] flex-1 cursor-pointer items-center justify-center rounded-xl border border-border text-sm text-foreground">
+            {imageLoading ? "Загружаю…" : coverImageUrl ? "Заменить фото" : "Загрузить фото"}
+            <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+          </label>
+          {coverImageUrl ? (
+            <button
+              type="button"
+              onClick={() => setCoverImageUrl(undefined)}
+              className="min-h-[44px] rounded-xl border border-border px-4 text-sm text-muted"
+            >
+              {ru.cabinet.removePhoto}
+            </button>
+          ) : null}
+        </div>
+
+        {imageError ? <p className="text-xs text-red-400">{imageError}</p> : null}
+        <p className="text-xs text-muted">{ru.cabinet.coverImageHint}</p>
+      </div>
 
       <Field label={ru.cabinet.fieldVenue} error={errors.venue}>
         <input value={venue} onChange={(e) => setVenue(e.target.value)} className={inputClass} />
