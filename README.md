@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CIS konnekt
 
-## Getting Started
+Кликабельное демо хаба тусовок для Санкт-Петербурга. Без сервера и базы
+данных — стартовые события лежат в одном файле, а всё, что меняет
+пользователь (баллы, «Иду», открытые коды, события организатора),
+хранится в localStorage браузера.
 
-First, run the development server:
+**Опубликованная версия:** https://cis-konnekt.vercel.app
+
+---
+
+## Как запустить локально
+
+Нужен Node.js (уже установлен на этом компьютере через nvm).
 
 ```bash
+cd ~/Desktop/cis-konnekt
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Открыть в браузере: **http://localhost:3000**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Чтобы остановить — `Ctrl+C` в терминале, где запущен `npm run dev`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Где что менять
 
-To learn more about Next.js, take a look at the following resources:
+| Что хочешь поменять | Какой файл |
+|---|---|
+| События (добавить/убрать/поправить вручную, не через кабинет) | `src/data/seed.ts` |
+| Организаторы и друзья (демо-данные) | `src/data/seed.ts` |
+| Название приложения и цвета | `src/config/brand.ts` |
+| Любой текст в интерфейсе (кнопки, подписи, сообщения) | `src/content/ru.ts` |
+| Список районов для фильтра | `src/data/districts.ts` |
+| Список жанров и их цвет на обложке | `src/data/genres.ts` |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+После любого изменения файла сохрани его — если `npm run dev` запущен,
+страница в браузере обновится сама.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Важно:** события, созданные или отредактированные через **Кабинет**
+(а не через `seed.ts`), хранятся в localStorage того браузера, где это
+сделали — на другом компьютере или после «Сбросить демо-данные» в
+профиле их не будет видно.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Как обновить опубликованный сайт
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Сайт на Vercel сам пересобирается при каждом изменении кода на GitHub.
+Чтобы обновить сайт:
+
+```bash
+cd ~/Desktop/cis-konnekt
+git add -A
+git commit -m "описание того, что поменял"
+git push
+```
+
+Через минуту-две изменения появятся на https://cis-konnekt.vercel.app
+— следить за сборкой можно в личном кабинете на vercel.com (раздел
+Deployments).
+
+---
+
+## Сценарий показа демо (на 2 минуты)
+
+1. **Открыть ленту, выбрать фильтр** — например, жанр «Техно» или
+   вкладку «Выходные».
+2. **Открыть любое событие**, нажать **«Иду»** и **«Купить билет»**
+   (или «Записаться», если бесплатное) — показать, что начислились
+   баллы (+50), и это видно в профиле.
+3. **Профиль → «Код закрытого ивента»** — ввести код `RAVE08`, открыть
+   закрытый ивент «Закрытый техно-рейв», посмотреть его полностью.
+4. **Кабинет** → выбрать организатора → **«Создать событие»** —
+   заполнить и сохранить, показать, что оно сразу появилось в ленте.
+   Затем добавить промоутера по имени — приложение сгенерирует код и
+   ссылку.
+5. **Скопировать промо-ссылку**, открыть её (как будто ты гость),
+   нажать **«Купить билет»** — вернуться в кабинет и показать, что
+   счётчик кликов у этого промоутера увеличился.
+
+---
+
+## Напоминание
+
+Это демо — оплаты, регистрация и покупки не настоящие. Все события,
+организаторы, площадки и артисты вымышленные.
