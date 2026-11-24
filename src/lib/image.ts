@@ -1,16 +1,9 @@
 /**
- * Сжимает выбранную фотографию и превращает её в data-URL (строку),
- * которую можно хранить прямо в localStorage — отдельного файлового
- * хранилища у нас нет, сервера тоже нет.
- *
- * Уменьшаем до maxWidth и пережимаем в JPEG, чтобы фото с телефона
- * (обычно несколько МБ) не съедало весь лимit localStorage браузера.
+ * Сжимает выбранную фотографию перед загрузкой в Supabase Storage —
+ * уменьшаем до maxWidth и пережимаем в JPEG, чтобы фото с телефона
+ * (обычно несколько МБ) не грузилось слишком долго.
  */
-export function resizeImageToDataUrl(
-  file: File,
-  maxWidth = 800,
-  quality = 0.8
-): Promise<string> {
+export function resizeImageToBlob(file: File, maxWidth = 800, quality = 0.8): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -30,7 +23,11 @@ export function resizeImageToDataUrl(
           return;
         }
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", quality));
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject(new Error("Не удалось сохранить изображение"))),
+          "image/jpeg",
+          quality
+        );
       };
       img.src = reader.result as string;
     };

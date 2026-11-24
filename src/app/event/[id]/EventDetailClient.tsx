@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, Share2 } from "lucide-react";
-import { organizers, friends as allFriends } from "@/data/seed";
-import { getAllEvents } from "@/lib/events";
 import { GENRE_META } from "@/data/genres";
 import { EventCover } from "@/components/EventCover";
 import { ClientOnly } from "@/components/ClientOnly";
@@ -15,9 +13,11 @@ import { ru } from "@/content/ru";
 import { brand } from "@/config/brand";
 import { formatEventWhenRange } from "@/lib/dates";
 import { formatPrice } from "@/lib/format";
-import { incrementViewCount, recordTicketClick, savePromoForEvent, toggleAttending } from "@/lib/storage";
-import { useAppState } from "@/hooks/useAppState";
-import type { CisEvent } from "@/types";
+import { createClient } from "@/lib/supabase/client";
+import { useRemoteData } from "@/hooks/useRemoteData";
+import { useSession } from "@/hooks/useSession";
+import { usePersonalData } from "@/hooks/usePersonalData";
+import type { CisEvent, Friend, Organizer } from "@/types";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -37,25 +37,41 @@ export function EventDetailClient({ id }: { id: string }) {
 }
 
 function EventDetailContent({ id }: { id: string }) {
-  const { state, update } = useAppState();
-  const event = useMemo(() => getAllEvents(state).find((e) => e.id === id), [state, id]);
+  const { events, organizers, friends, loading, error } = useRemoteData();
+  const { user, loading: sessionLoading } = useSession();
+  const personal = usePersonalData(sessionLoading ? undefined : (user?.id ?? null));
+  const event = events.find((e) => e.id === id);
 
+  if (loading || sessionLoading || personal.loading) return <EventDetailSkeleton />;
+  if (error) return <EventNotFoundNotice />;
   if (!event) return <EventNotFoundNotice />;
 
-  const isLocked = event.isPrivate && !state.openedEventIds.includes(event.id);
+  const isLocked = event.isPrivate && !personal.openedEventIds.includes(event.id);
   if (isLocked) return <LockedEventNotice />;
 
-  return <EventDetailView event={event} state={state} update={update} />;
+  return (
+    <EventDetailView
+      event={event}
+      organizers={organizers}
+      friends={friends}
+      userId={user?.id ?? null}
+      personal={personal}
+    />
+  );
 }
 
 function EventDetailView({
   event,
-  state,
-  update,
+  organizers,
+  friends,
+  userId,
+  personal,
 }: {
   event: CisEvent;
-  state: ReturnType<typeof useAppState>["state"];
-  update: ReturnType<typeof useAppState>["update"];
+  organizers: Organizer[];
+  friends: Friend[];
+  userId: string | null;
+  personal: ReturnType<typeof usePersonalData>;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -63,48 +79,44 @@ function EventDetailView({
   const [ticketMessage, setTicketMessage] = useState<string | null>(null);
 
   const viewCountedRef = useRef(false);
-  const promoSavedRef = useRef(false);
 
   // Счётчик просмотров — увеличиваем один раз при открытии страницы.
   useEffect(() => {
     if (viewCountedRef.current) return;
     viewCountedRef.current = true;
-    update((prev) => incrementViewCount(prev, event.id));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    createClient().rpc("increment_event_view", { p_event_id: event.id });
   }, [event.id]);
 
-  // Если пришли по ссылке с ?promo=КОД — запоминаем код за этим событием,
-  // чтобы потом учесть клик в статистике промоутера.
-  useEffect(() => {
-    if (promoSavedRef.current) return;
-    const promo = searchParams.get("promo");
-    if (!promo) return;
-    promoSavedRef.current = true;
-    update((prev) => savePromoForEvent(prev, event.id, promo));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event.id, searchParams]);
-
   const organizer = organizers.find((o) => o.id === event.organizerId);
-  const goingFriends = allFriends.filter((f) => event.friendsGoingIds.includes(f.id));
-  const youGoing = state.attendingEventIds.includes(event.id);
+  const goingFriends = friends.filter((f) => event.friendsGoingIds.includes(f.id));
+  const youGoing = personal.attendingEventIds.includes(event.id);
 
   const mapsUrl = `https://yandex.ru/maps/?text=${encodeURIComponent(
     `${event.address}, Санкт-Петербург`
   )}`;
 
-  function handleBuyTicket() {
-    const alreadyRewarded = state.clickedTicketEventIds.includes(event.id);
-    update((prev) => recordTicketClick(prev, event.id));
-    if (!alreadyRewarded) {
-      setTicketMessage(ru.event.ticketBonusEarned);
-      setTimeout(() => setTicketMessage(null), 2500);
+  async function handleBuyTicket() {
+    // Статистика кликов для организатора считается всегда, независимо от входа в аккаунт.
+    await createClient()
+      .from("ticket_clicks")
+      .insert({ event_id: event.id, user_id: userId, promo_code: searchParams.get("promo") });
+    if (userId) {
+      const rewarded = await personal.recordTicketClick(event.id);
+      if (rewarded) {
+        setTicketMessage(ru.event.ticketBonusEarned);
+        setTimeout(() => setTicketMessage(null), 2500);
+      }
     }
     // Открываем в новой вкладке — пользователь не теряет ленту на телефоне.
     window.open(event.ticketUrl, "_blank", "noopener,noreferrer");
   }
 
   function handleToggleAttend() {
-    update((prev) => toggleAttending(prev, event.id));
+    if (!userId) {
+      router.push("/profile");
+      return;
+    }
+    personal.toggleAttending(event.id);
   }
 
   async function handleShare() {

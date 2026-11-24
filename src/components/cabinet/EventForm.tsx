@@ -5,7 +5,8 @@ import { useState, type FormEvent } from "react";
 import { ru } from "@/content/ru";
 import { GENRE_OPTIONS } from "@/data/genres";
 import { DISTRICTS } from "@/data/districts";
-import { resizeImageToDataUrl } from "@/lib/image";
+import { resizeImageToBlob } from "@/lib/image";
+import { uploadEventCover, deleteEventCover } from "@/lib/supabase/eventCover";
 import type { CisEvent, Genre } from "@/types";
 
 function Field({
@@ -62,6 +63,9 @@ export function EventForm({
   const [coverImageUrl, setCoverImageUrl] = useState<string | undefined>(initial?.coverImageUrl);
   const [imageLoading, setImageLoading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
+  // Стабильный id — нужен сразу, чтобы фото можно было загрузить в Storage
+  // ещё до первого сохранения нового события.
+  const [eventId] = useState(() => initial?.id ?? `custom-${crypto.randomUUID()}`);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -73,10 +77,24 @@ export function EventForm({
     setImageError(null);
     setImageLoading(true);
     try {
-      const dataUrl = await resizeImageToDataUrl(file);
-      setCoverImageUrl(dataUrl);
+      const blob = await resizeImageToBlob(file);
+      const url = await uploadEventCover(organizerId, eventId, blob);
+      setCoverImageUrl(url);
     } catch {
       setImageError("Не получилось загрузить это фото — попробуй другое");
+    } finally {
+      setImageLoading(false);
+    }
+  }
+
+  async function handleRemovePhoto() {
+    setImageError(null);
+    setImageLoading(true);
+    try {
+      await deleteEventCover(organizerId, eventId);
+      setCoverImageUrl(undefined);
+    } catch {
+      setImageError("Не получилось убрать фото — попробуй ещё раз");
     } finally {
       setImageLoading(false);
     }
@@ -101,7 +119,7 @@ export function EventForm({
     if (Object.keys(nextErrors).length > 0) return;
 
     const event: CisEvent = {
-      id: initial?.id ?? `custom-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      id: eventId,
       title: title.trim(),
       organizerId,
       venue: venue.trim(),
@@ -124,6 +142,7 @@ export function EventForm({
       accessCode: isPrivate ? accessCode.trim() : undefined,
       friendsGoingIds: initial?.friendsGoingIds ?? [],
       coverImageUrl,
+      viewCount: initial?.viewCount ?? 0,
     };
 
     onSave(event);
@@ -159,8 +178,9 @@ export function EventForm({
           {coverImageUrl ? (
             <button
               type="button"
-              onClick={() => setCoverImageUrl(undefined)}
-              className="min-h-[44px] rounded-xl border border-border px-4 text-sm text-muted"
+              onClick={handleRemovePhoto}
+              disabled={imageLoading}
+              className="min-h-[44px] rounded-xl border border-border px-4 text-sm text-muted disabled:opacity-60"
             >
               {ru.cabinet.removePhoto}
             </button>

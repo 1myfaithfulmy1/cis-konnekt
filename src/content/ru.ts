@@ -63,6 +63,26 @@ export const ru = {
     you: "Ты",
   },
 
+  auth: {
+    loginTitle: "Вход",
+    signupTitle: "Регистрация",
+    nameLabel: "Имя",
+    namePlaceholder: "Как тебя зовут",
+    emailLabel: "Email",
+    emailPlaceholder: "you@example.com",
+    passwordLabel: "Пароль",
+    passwordPlaceholder: "Минимум 6 символов",
+    submitLogin: "Войти",
+    submitSignup: "Создать аккаунт",
+    switchToSignup: "Нет аккаунта? Зарегистрироваться",
+    switchToLogin: "Уже есть аккаунт? Войти",
+    logout: "Выйти",
+    errorGeneric: "Что-то пошло не так — попробуй ещё раз",
+    errorInvalidCredentials: "Неверный email или пароль",
+    errorUserExists: "Этот email уже зарегистрирован",
+    loading: "Загрузка...",
+  },
+
   profile: {
     balanceLabel: "баллов",
     historyTitle: "История начислений",
@@ -87,9 +107,10 @@ export const ru = {
   },
 
   cabinet: {
-    pickerTitle: "Кто ты?",
-    pickerHint: "Выбери организатора, чтобы управлять событиями",
-    switchOrganizer: "Сменить организатора",
+    createOrgTitle: "Стать организатором",
+    createOrgHint: "Придумай название — так тебя увидят гости в карточке события",
+    createOrgNamePlaceholder: "Например, Чердак Промо",
+    createOrgSubmit: "Создать",
     hintBanner:
       "Опубликуй ссылку на событие у себя в соцсетях — гости купят билет через CIS konnekt.",
     statsViews: "Просмотры",

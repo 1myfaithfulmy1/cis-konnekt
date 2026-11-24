@@ -2,10 +2,11 @@
 
 import { ClientOnly } from "@/components/ClientOnly";
 import { CabinetSkeleton } from "@/components/CabinetSkeleton";
-import { OrganizerPicker } from "@/components/cabinet/OrganizerPicker";
+import { AuthForm } from "@/components/AuthForm";
+import { CreateOrganizerForm } from "@/components/cabinet/CreateOrganizerForm";
 import { OrganizerDashboard } from "@/components/cabinet/OrganizerDashboard";
-import { useAppState } from "@/hooks/useAppState";
-import { selectOrganizer } from "@/lib/storage";
+import { useSession } from "@/hooks/useSession";
+import { useMyOrganizer } from "@/hooks/useMyOrganizer";
 
 export default function CabinetPage() {
   return (
@@ -16,20 +17,25 @@ export default function CabinetPage() {
 }
 
 function CabinetContent() {
-  const { state, update } = useAppState();
+  const { user, loading: sessionLoading } = useSession();
 
-  if (!state.selectedOrganizerId) {
+  if (sessionLoading) return <CabinetSkeleton />;
+  if (!user) {
     return (
-      <OrganizerPicker onSelect={(organizerId) => update((prev) => selectOrganizer(prev, organizerId))} />
+      <div className="px-4 pt-6 md:mx-auto md:max-w-2xl md:px-6 md:py-6">
+        <AuthForm />
+      </div>
     );
   }
 
-  return (
-    <OrganizerDashboard
-      organizerId={state.selectedOrganizerId}
-      state={state}
-      update={update}
-      onSwitch={() => update((prev) => selectOrganizer(prev, null))}
-    />
-  );
+  return <MyOrganizerCabinet userId={user.id} />;
+}
+
+function MyOrganizerCabinet({ userId }: { userId: string }) {
+  const { organizer, loading, createOrganizer } = useMyOrganizer(userId);
+
+  if (loading) return <CabinetSkeleton />;
+  if (!organizer) return <CreateOrganizerForm onCreate={createOrganizer} />;
+
+  return <OrganizerDashboard organizer={organizer} />;
 }

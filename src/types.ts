@@ -15,6 +15,7 @@ export type Genre =
 export interface Organizer {
   id: string;
   name: string;
+  ownerId?: string; // уид владельца аккаунта (нет — у демо-организаторов из стартовых данных)
 }
 
 export interface Friend {
@@ -46,10 +47,22 @@ export interface CisEvent {
   isPrivate: boolean;
   accessCode?: string; // только для закрытых событий
   friendsGoingIds: string[]; // id друзей, которые идут (стартовые данные)
-  coverImageUrl?: string; // своя фотография обложки (data-URL из localStorage); нет — обложка текстовая
+  coverImageUrl?: string; // своя фотография обложки (data-URL, хранится в Supabase); нет — обложка текстовая
+  viewCount: number; // просмотры страницы события — общий счётчик в базе
 }
 
-export interface DemoUser {
+export interface Promoter {
+  id: string;
+  organizerId: string;
+  eventId: string;
+  name: string;
+  code: string;
+}
+
+/** Запись из public.profiles — заводится автоматически при регистрации (см. supabase/auth_trigger.sql). */
+export interface Profile {
+  id: string;
   name: string;
   startingBonus: number;
+  referralUsed: boolean;
 }

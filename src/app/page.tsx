@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { getAllEvents } from "@/lib/events";
 import { GENRE_OPTIONS } from "@/data/genres";
 import { DISTRICTS } from "@/data/districts";
 import { ru } from "@/content/ru";
@@ -13,7 +12,9 @@ import { LockedEventCard } from "@/components/LockedEventCard";
 import { EmptyState } from "@/components/EmptyState";
 import { SelectField } from "@/components/SelectField";
 import { DEFAULT_FILTERS, filterEvents, type DateTab, type PriceFilter } from "@/lib/filterEvents";
-import { useAppState } from "@/hooks/useAppState";
+import { useRemoteData } from "@/hooks/useRemoteData";
+import { useSession } from "@/hooks/useSession";
+import { usePersonalData } from "@/hooks/usePersonalData";
 import type { Genre } from "@/types";
 
 const TABS: { value: DateTab; label: string }[] = [
@@ -32,17 +33,29 @@ export default function FeedPage() {
 }
 
 function FeedContent() {
-  const { state } = useAppState();
+  const { events, friends, loading, error } = useRemoteData();
+  const { user, loading: sessionLoading } = useSession();
+  const { openedEventIds, loading: personalLoading } = usePersonalData(
+    sessionLoading ? undefined : (user?.id ?? null)
+  );
   const [tab, setTab] = useState<DateTab>(DEFAULT_FILTERS.tab);
   const [genre, setGenre] = useState<Genre | "all">(DEFAULT_FILTERS.genre);
   const [district, setDistrict] = useState<string>(DEFAULT_FILTERS.district);
   const [price, setPrice] = useState<PriceFilter>(DEFAULT_FILTERS.price);
 
-  const allEvents = useMemo(() => getAllEvents(state), [state]);
   const visibleEvents = useMemo(
-    () => filterEvents(allEvents, { tab, genre, district, price }),
-    [allEvents, tab, genre, district, price]
+    () => filterEvents(events, { tab, genre, district, price }),
+    [events, tab, genre, district, price]
   );
+
+  if (loading || sessionLoading || personalLoading) return <FeedSkeleton />;
+  if (error) {
+    return (
+      <div className="px-4 pt-6 md:mx-auto md:max-w-7xl md:px-6">
+        <EmptyState title="Не удалось загрузить ленту" hint="Проверь соединение и обнови страницу" />
+      </div>
+    );
+  }
 
   const genreOptions = [{ value: "all", label: ru.feed.filters.genreAll }, ...GENRE_OPTIONS];
   const districtOptions = [
@@ -104,10 +117,10 @@ function FeedContent() {
       ) : (
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
           {visibleEvents.map((event) =>
-            event.isPrivate && !state.openedEventIds.includes(event.id) ? (
+            event.isPrivate && !openedEventIds.includes(event.id) ? (
               <LockedEventCard key={event.id} />
             ) : (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} friends={friends} />
             )
           )}
         </div>

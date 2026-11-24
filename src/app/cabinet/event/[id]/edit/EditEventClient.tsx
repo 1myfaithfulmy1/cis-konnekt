@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ClientOnly } from "@/components/ClientOnly";
 import { CabinetSkeleton } from "@/components/CabinetSkeleton";
 import { EventForm } from "@/components/cabinet/EventForm";
-import { useAppState } from "@/hooks/useAppState";
-import { getAllEvents } from "@/lib/events";
-import { upsertLocalEvent } from "@/lib/storage";
+import { useSession } from "@/hooks/useSession";
+import { useMyOrganizer } from "@/hooks/useMyOrganizer";
+import { useOrganizerEvents } from "@/hooks/useOrganizerEvents";
 import type { CisEvent } from "@/types";
 
 export function EditEventClient({ id }: { id: string }) {
@@ -20,17 +20,27 @@ export function EditEventClient({ id }: { id: string }) {
 
 function EditEventContent({ id }: { id: string }) {
   const router = useRouter();
-  const { state, update } = useAppState();
-  const event = useMemo(() => getAllEvents(state).find((e) => e.id === id), [state, id]);
+  const { user, loading: sessionLoading } = useSession();
+  const { organizer, loading: organizerLoading } = useMyOrganizer(
+    sessionLoading ? undefined : (user?.id ?? null)
+  );
+  const { events, loading: eventsLoading, saveEvent } = useOrganizerEvents(
+    organizerLoading ? undefined : (organizer?.id ?? null)
+  );
+  const event = events.find((e) => e.id === id);
 
-  if (!state.selectedOrganizerId) {
-    router.replace("/cabinet");
-    return null;
-  }
+  const organizerReady = !sessionLoading && !organizerLoading;
 
-  // Редактировать можно только своё событие — чужое (другого организатора)
-  // или несуществующее тут не покажем.
-  if (!event || event.organizerId !== state.selectedOrganizerId) {
+  // Редактировать можно только от имени своего организатора.
+  useEffect(() => {
+    if (organizerReady && !organizer) router.replace("/cabinet");
+  }, [organizerReady, organizer, router]);
+
+  if (!organizerReady || !organizer) return <CabinetSkeleton />;
+  if (eventsLoading) return <CabinetSkeleton />;
+
+  // Редактировать можно только своё событие — чужое или несуществующее тут не покажем.
+  if (!event) {
     return (
       <div className="px-4 pt-10 text-center md:mx-auto md:max-w-2xl md:px-6 md:py-10">
         <p className="text-sm text-muted">Событие не найдено или принадлежит другому организатору</p>
@@ -38,17 +48,12 @@ function EditEventContent({ id }: { id: string }) {
     );
   }
 
-  function handleSave(updated: CisEvent) {
-    update((prev) => upsertLocalEvent(prev, updated));
+  async function handleSave(updated: CisEvent) {
+    await saveEvent(updated);
     router.push("/cabinet");
   }
 
   return (
-    <EventForm
-      organizerId={state.selectedOrganizerId}
-      initial={event}
-      onSave={handleSave}
-      onCancel={() => router.push("/cabinet")}
-    />
+    <EventForm organizerId={organizer.id} initial={event} onSave={handleSave} onCancel={() => router.push("/cabinet")} />
   );
 }

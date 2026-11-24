@@ -1,31 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ru } from "@/content/ru";
-import { addPromoter, type AppState } from "@/lib/storage";
-import type { CisEvent } from "@/types";
+import type { CisEvent, Promoter } from "@/types";
 
 export function PromotersPanel({
-  organizerId,
   myEvents,
-  state,
-  update,
+  promoters,
+  clicksByPromoCode,
+  onAdd,
 }: {
-  organizerId: string;
   myEvents: CisEvent[];
-  state: AppState;
-  update: (updater: (prev: AppState) => AppState) => void;
+  promoters: Promoter[];
+  clicksByPromoCode: Record<string, number>;
+  onAdd: (name: string, eventId: string) => Promise<void>;
 }) {
   const [name, setName] = useState("");
   const [eventId, setEventId] = useState(myEvents[0]?.id ?? "");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const myPromoters = state.promoters.filter((p) => p.organizerId === organizerId);
+  // myEvents загружается асинхронно — когда появляется первое событие
+  // (или текущий выбор пропадает, например после удаления), выбираем заново.
+  useEffect(() => {
+    if (myEvents.length > 0 && !myEvents.some((e) => e.id === eventId)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setEventId(myEvents[0].id);
+    }
+  }, [myEvents, eventId]);
 
-  function handleAdd(e: React.FormEvent) {
+  async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !eventId) return;
-    update((prev) => addPromoter(prev, organizerId, eventId, name).state);
+    await onAdd(name, eventId);
     setName("");
   }
 
@@ -77,12 +83,12 @@ export function PromotersPanel({
           </form>
 
           <div className="mt-4 space-y-2">
-            {myPromoters.length === 0 ? (
+            {promoters.length === 0 ? (
               <p className="text-sm text-muted">{ru.cabinet.promoterTableEmpty}</p>
             ) : (
-              myPromoters.map((promoter) => {
+              promoters.map((promoter) => {
                 const event = myEvents.find((e) => e.id === promoter.eventId);
-                const clicks = state.promoClickCounts[promoter.code] ?? 0;
+                const clicks = clicksByPromoCode[promoter.code] ?? 0;
                 return (
                   <div
                     key={promoter.id}

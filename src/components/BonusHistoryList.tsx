@@ -1,4 +1,4 @@
-import type { BonusEntry } from "@/lib/storage";
+import type { BonusEntry } from "@/hooks/usePersonalData";
 import { ru } from "@/content/ru";
 
 function formatEntryDate(iso: string): string {

@@ -1,48 +1,42 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { organizers } from "@/data/seed";
-import { getAllEvents } from "@/lib/events";
+import { createClient } from "@/lib/supabase/client";
 import { formatPrice } from "@/lib/format";
 import { formatEventWhen } from "@/lib/dates";
-import { deleteLocalEvent, type AppState } from "@/lib/storage";
+import { useSession } from "@/hooks/useSession";
+import { usePersonalData } from "@/hooks/usePersonalData";
+import { useOrganizerEvents } from "@/hooks/useOrganizerEvents";
+import { usePromoters } from "@/hooks/usePromoters";
 import { ru } from "@/content/ru";
+import type { Organizer } from "@/types";
 import { PromotersPanel } from "./PromotersPanel";
 
-export function OrganizerDashboard({
-  organizerId,
-  state,
-  update,
-  onSwitch,
-}: {
-  organizerId: string;
-  state: AppState;
-  update: (updater: (prev: AppState) => AppState) => void;
-  onSwitch: () => void;
-}) {
-  const organizer = organizers.find((o) => o.id === organizerId);
-  const myEvents = useMemo(
-    () => getAllEvents(state).filter((e) => e.organizerId === organizerId),
-    [state, organizerId]
-  );
+export function OrganizerDashboard({ organizer }: { organizer: Organizer }) {
+  const { events: myEvents, loading, deleteEvent } = useOrganizerEvents(organizer.id);
+  const { user, loading: sessionLoading } = useSession();
+  const { attendingEventIds } = usePersonalData(sessionLoading ? undefined : (user?.id ?? null));
+  const eventIds = myEvents.map((e) => e.id);
+  const { promoters, stats, addPromoter } = usePromoters(organizer.id, eventIds);
 
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
-  function handleDelete(eventId: string) {
-    update((prev) => deleteLocalEvent(prev, eventId));
+  async function handleDelete(eventId: string) {
+    await deleteEvent(eventId);
     setPendingDeleteId(null);
+  }
+
+  async function handleLogout() {
+    await createClient().auth.signOut();
   }
 
   return (
     <div className="space-y-6 px-4 pb-10 pt-4 md:mx-auto md:max-w-2xl md:px-6 md:py-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-lg text-foreground">{organizer?.name}</h1>
-        <button
-          onClick={onSwitch}
-          className="flex min-h-[44px] items-center text-sm text-muted underline"
-        >
-          {ru.cabinet.switchOrganizer}
+        <h1 className="font-display text-lg text-foreground">{organizer.name}</h1>
+        <button onClick={handleLogout} className="flex min-h-[44px] items-center text-sm text-muted underline">
+          {ru.auth.logout}
         </button>
       </div>
 
@@ -61,15 +55,16 @@ export function OrganizerDashboard({
           </Link>
         </div>
 
-        {myEvents.length === 0 ? (
+        {loading ? (
+          <p className="text-sm text-muted">{ru.auth.loading}</p>
+        ) : myEvents.length === 0 ? (
           <p className="text-sm text-muted">{ru.cabinet.noOwnEvents}</p>
         ) : (
           <div className="space-y-3">
             {myEvents.map((event) => {
-              const views = state.viewCounts[event.id] ?? 0;
-              const clicks = state.ticketClickCounts[event.id] ?? 0;
-              const going =
-                event.friendsGoingIds.length + (state.attendingEventIds.includes(event.id) ? 1 : 0);
+              const views = event.viewCount;
+              const clicks = stats.byEvent[event.id] ?? 0;
+              const going = event.friendsGoingIds.length + (attendingEventIds.includes(event.id) ? 1 : 0);
 
               return (
                 <div key={event.id} className="rounded-2xl border border-border bg-surface p-4">
@@ -134,7 +129,7 @@ export function OrganizerDashboard({
         )}
       </div>
 
-      <PromotersPanel organizerId={organizerId} myEvents={myEvents} state={state} update={update} />
+      <PromotersPanel myEvents={myEvents} promoters={promoters} clicksByPromoCode={stats.byPromoCode} onAdd={addPromoter} />
     </div>
   );
 }

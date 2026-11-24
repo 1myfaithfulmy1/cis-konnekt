@@ -51,8 +51,8 @@ export function EventCover({
     >
       {coverImageUrl ? (
         <>
-          {/* unoptimized — фото уже своё, сжатое и лежит прямо в localStorage (data-URL),
-              через обычный сервер оптимизации картинок Next.js его не пропустить. */}
+          {/* unoptimized — фото уже сжато при загрузке и лежит в Supabase Storage;
+              через сервер оптимизации картинок Next.js (ограниченный список доменов) его не пропустить. */}
           <Image src={coverImageUrl} alt="" fill unoptimized className="object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
         </>

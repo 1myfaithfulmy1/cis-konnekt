@@ -1,14 +1,13 @@
 import Link from "next/link";
-import { friends as allFriends } from "@/data/seed";
 import { GENRE_META } from "@/data/genres";
 import { EventCover } from "@/components/EventCover";
 import { FriendAvatarStack } from "@/components/FriendAvatarStack";
 import { formatEventWhen } from "@/lib/dates";
 import { formatGoingLabel, formatPrice } from "@/lib/format";
-import type { CisEvent } from "@/types";
+import type { CisEvent, Friend } from "@/types";
 
-export function EventCard({ event }: { event: CisEvent }) {
-  const goingFriends = allFriends.filter((f) => event.friendsGoingIds.includes(f.id));
+export function EventCard({ event, friends }: { event: CisEvent; friends: Friend[] }) {
+  const goingFriends = friends.filter((f) => event.friendsGoingIds.includes(f.id));
 
   return (
     <Link

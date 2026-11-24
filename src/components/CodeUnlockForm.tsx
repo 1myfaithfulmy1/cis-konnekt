@@ -3,40 +3,33 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ru } from "@/content/ru";
-import { unlockEventByCode, type AppState } from "@/lib/storage";
+import type { UnlockResult } from "@/hooks/usePersonalData";
 import type { CisEvent } from "@/types";
 
 export function CodeUnlockForm({
   events,
-  update,
+  onSubmitCode,
 }: {
   events: CisEvent[];
-  update: (updater: (prev: AppState) => AppState) => void;
+  onSubmitCode: (code: string, events: CisEvent[]) => Promise<{ result: UnlockResult; eventId?: string }>;
 }) {
   const [code, setCode] = useState("");
   const [message, setMessage] = useState<{ kind: "success" | "error"; text: string; eventId?: string } | null>(
     null
   );
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!code.trim()) return;
 
-    let outcome: { kind: "success" | "error"; text: string; eventId?: string } | null = null;
-
-    update((prev) => {
-      const { state: next, result, eventId } = unlockEventByCode(prev, code, events);
-      if (result === "ok") {
-        outcome = { kind: "success", text: ru.profile.codeSuccess, eventId };
-      } else if (result === "already") {
-        outcome = { kind: "success", text: ru.profile.codeAlready, eventId };
-      } else {
-        outcome = { kind: "error", text: ru.profile.codeInvalid };
-      }
-      return next;
-    });
-
-    if (outcome) setMessage(outcome);
+    const { result, eventId } = await onSubmitCode(code, events);
+    if (result === "ok") {
+      setMessage({ kind: "success", text: ru.profile.codeSuccess, eventId });
+    } else if (result === "already") {
+      setMessage({ kind: "success", text: ru.profile.codeAlready, eventId });
+    } else {
+      setMessage({ kind: "error", text: ru.profile.codeInvalid });
+    }
     setCode("");
   }
 
