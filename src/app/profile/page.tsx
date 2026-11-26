@@ -6,6 +6,7 @@ import { ClientOnly } from "@/components/ClientOnly";
 import { ProfileSkeleton } from "@/components/ProfileSkeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { EventCard } from "@/components/EventCard";
+import { ProfileHeader } from "@/components/ProfileHeader";
 import { BonusHistoryList } from "@/components/BonusHistoryList";
 import { CodeUnlockForm } from "@/components/CodeUnlockForm";
 import { AuthForm } from "@/components/AuthForm";
@@ -41,7 +42,15 @@ function ProfileContent() {
 
 function LoggedInProfile({ userId }: { userId: string }) {
   const { events, friends, loading, error } = useRemoteData();
-  const { profile, loading: profileLoading, markReferralUsed, resetReferral } = useProfile(userId);
+  const {
+    profile,
+    loading: profileLoading,
+    markReferralUsed,
+    resetReferral,
+    updateProfile,
+    updateAvatar,
+    removeAvatar,
+  } = useProfile(userId);
   const personal = usePersonalData(userId);
   const [inviteMessage, setInviteMessage] = useState<string | null>(null);
   const [resetMessage, setResetMessage] = useState<string | null>(null);
@@ -85,14 +94,16 @@ function LoggedInProfile({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-6 px-4 pb-6 pt-4 md:mx-auto md:max-w-2xl md:px-6 md:py-6">
+      <ProfileHeader
+        profile={profile}
+        onUpdateProfile={updateProfile}
+        onUpdateAvatar={updateAvatar}
+        onRemoveAvatar={removeAvatar}
+        onLogout={handleLogout}
+      />
+
       <div className="rounded-2xl border border-border bg-surface p-4">
-        <div className="flex items-center justify-between">
-          <p className="font-display text-lg text-foreground">{profile.name}</p>
-          <button onClick={handleLogout} className="min-h-[36px] text-sm text-muted underline">
-            {ru.auth.logout}
-          </button>
-        </div>
-        <p className="mt-1 text-2xl font-semibold text-accent">
+        <p className="text-2xl font-semibold text-accent">
           {balance} <span className="text-sm font-normal text-muted">{ru.profile.balanceLabel}</span>
         </p>
       </div>

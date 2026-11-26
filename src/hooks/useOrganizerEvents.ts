@@ -14,39 +14,37 @@ export function useOrganizerEvents(organizerId: string | null | undefined) {
   const [events, setEvents] = useState<CisEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const reload = useCallback(async () => {
-    if (organizerId === undefined) return; // организатор ещё не определился — ждём
-
-    if (!organizerId) {
-      setEvents([]);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
+  const fetchEvents = useCallback(async (): Promise<CisEvent[]> => {
+    if (!organizerId) return [];
     const supabase = createClient();
     const { data } = await supabase.from("events").select("*").eq("organizer_id", organizerId);
-    setEvents((data ?? []).map(mapEventRow));
-    setLoading(false);
+    return (data ?? []).map(mapEventRow);
   }, [organizerId]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    reload();
-  }, [reload]);
+    if (organizerId === undefined) return; // организатор ещё не определился — ждём
+
+    // Начальная загрузка — тут уместно показать загрузку (loading=true по умолчанию).
+    fetchEvents().then(setEvents).finally(() => setLoading(false));
+  }, [organizerId, fetchEvents]);
+
+  /** Тихо перечитывает события после изменения — без мигания "загрузка" на весь экран. */
+  async function refetch() {
+    setEvents(await fetchEvents());
+  }
 
   async function saveEvent(event: CisEvent) {
     const supabase = createClient();
     await supabase.from("events").upsert(toEventRow(event));
-    await reload();
+    await refetch();
   }
 
   async function deleteEvent(eventId: string) {
     const supabase = createClient();
     await supabase.from("events").delete().eq("id", eventId);
     if (organizerId) await deleteEventCover(organizerId, eventId).catch(() => {});
-    await reload();
+    await refetch();
   }
 
-  return { events, loading, saveEvent, deleteEvent, reload };
+  return { events, loading, saveEvent, deleteEvent, refetch };
 }

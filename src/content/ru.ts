@@ -84,6 +84,15 @@ export const ru = {
   },
 
   profile: {
+    editProfile: "Изменить профиль",
+    editProfileCancel: "Готово",
+    nameLabel: "Имя",
+    nicknamePlaceholder: "Никнейм (необязательно)",
+    saveProfile: "Сохранить",
+    avatarUpload: "Загрузить фото",
+    avatarReplace: "Заменить фото",
+    avatarRemove: "Убрать фото",
+    avatarError: "Не получилось загрузить это фото — попробуй другое",
     balanceLabel: "баллов",
     historyTitle: "История начислений",
     historyEmpty: "Пока баллов нет — сходи на событие или пригласи друга",

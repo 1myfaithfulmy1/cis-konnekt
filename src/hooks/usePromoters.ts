@@ -13,22 +13,22 @@ interface ClickStats {
 
 const EMPTY_STATS: ClickStats = { byEvent: {}, byPromoCode: {} };
 
+interface PromoterState {
+  promoters: Promoter[];
+  stats: ClickStats;
+}
+
+const EMPTY: PromoterState = { promoters: [], stats: EMPTY_STATS };
+
 /** Промоутеры организатора и статистика кликов по их ссылкам (таблицы promoters + ticket_clicks). */
 export function usePromoters(organizerId: string | null, eventIds: string[]) {
-  const [promoters, setPromoters] = useState<Promoter[]>([]);
-  const [stats, setStats] = useState<ClickStats>(EMPTY_STATS);
+  const [state, setState] = useState<PromoterState>(EMPTY);
   const [loading, setLoading] = useState(true);
   const eventIdsKey = eventIds.join(",");
 
-  const reload = useCallback(async () => {
-    if (!organizerId) {
-      setPromoters([]);
-      setStats(EMPTY_STATS);
-      setLoading(false);
-      return;
-    }
+  const fetchData = useCallback(async (): Promise<PromoterState> => {
+    if (!organizerId) return EMPTY;
 
-    setLoading(true);
     const supabase = createClient();
     const ids = eventIdsKey ? eventIdsKey.split(",") : [];
 
@@ -46,16 +46,14 @@ export function usePromoters(organizerId: string | null, eventIds: string[]) {
       if (row.promo_code) byPromoCode[row.promo_code] = (byPromoCode[row.promo_code] ?? 0) + 1;
     }
 
-    setPromoters((promotersRes.data ?? []).map(mapPromoterRow));
-    setStats({ byEvent, byPromoCode });
-    setLoading(false);
+    return { promoters: (promotersRes.data ?? []).map(mapPromoterRow), stats: { byEvent, byPromoCode } };
     // eventIdsKey — стабильная строка вместо массива, чтобы не перезапускать эффект на каждый рендер
   }, [organizerId, eventIdsKey]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    reload();
-  }, [reload]);
+    // Начальная загрузка — тут уместно показать загрузку (loading=true по умолчанию).
+    fetchData().then(setState).finally(() => setLoading(false));
+  }, [fetchData]);
 
   async function addPromoter(name: string, eventId: string) {
     if (!organizerId) return;
@@ -67,8 +65,8 @@ export function usePromoters(organizerId: string | null, eventIds: string[]) {
       name: name.trim(),
       code: generatePromoCode(name),
     });
-    await reload();
+    setState(await fetchData());
   }
 
-  return { promoters, stats, loading, addPromoter };
+  return { promoters: state.promoters, stats: state.stats, loading, addPromoter };
 }

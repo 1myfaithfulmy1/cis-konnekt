@@ -63,6 +63,8 @@ export interface Promoter {
 export interface Profile {
   id: string;
   name: string;
+  nickname?: string;
+  avatarUrl?: string;
   startingBonus: number;
   referralUsed: boolean;
 }

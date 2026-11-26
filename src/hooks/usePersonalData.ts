@@ -34,16 +34,9 @@ export function usePersonalData(userId: string | null | undefined) {
   const [data, setData] = useState<PersonalState>(EMPTY);
   const [loading, setLoading] = useState(true);
 
-  const reload = useCallback(async () => {
-    if (userId === undefined) return; // сессия ещё не определилась — ждём, не трогаем loading
+  const fetchData = useCallback(async (): Promise<PersonalState> => {
+    if (!userId) return EMPTY;
 
-    if (!userId) {
-      setData(EMPTY);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
     const supabase = createClient();
     const [attendances, unlocked, bonuses] = await Promise.all([
       supabase.from("attendances").select("event_id").eq("user_id", userId),
@@ -55,7 +48,7 @@ export function usePersonalData(userId: string | null | undefined) {
         .order("created_at", { ascending: false }),
     ]);
 
-    setData({
+    return {
       attendingEventIds: (attendances.data ?? []).map((r) => r.event_id),
       openedEventIds: (unlocked.data ?? []).map((r) => r.event_id),
       bonusHistory: (bonuses.data ?? []).map((r) => ({
@@ -65,22 +58,25 @@ export function usePersonalData(userId: string | null | undefined) {
         eventId: r.event_id,
         at: r.created_at,
       })),
-    });
-    setLoading(false);
+    };
   }, [userId]);
 
   useEffect(() => {
-    // reload() сама решает, писать ли в состояние синхронно (аккаунт вышел) или
-    // после запроса к Supabase — оба случая ожидаемы.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    reload();
-  }, [reload]);
+    if (userId === undefined) return; // сессия ещё не определилась — ждём, не трогаем loading
+    // Начальная загрузка — тут уместно показать загрузку (loading=true по умолчанию).
+    fetchData().then(setData).finally(() => setLoading(false));
+  }, [userId, fetchData]);
+
+  /** Тихо перечитывает данные после изменения — без мигания "загрузка" на весь экран. */
+  async function refetch() {
+    setData(await fetchData());
+  }
 
   async function grantBonus(amount: number, reason: string, eventId: string | null = null) {
     if (!userId) return;
     const supabase = createClient();
     await supabase.from("bonus_history").insert({ user_id: userId, amount, reason, event_id: eventId });
-    await reload();
+    await refetch();
   }
 
   async function toggleAttending(eventId: string) {
@@ -91,7 +87,7 @@ export function usePersonalData(userId: string | null | undefined) {
     } else {
       await supabase.from("attendances").insert({ user_id: userId, event_id: eventId });
     }
-    await reload();
+    await refetch();
   }
 
   async function unlockByCode(
@@ -106,7 +102,7 @@ export function usePersonalData(userId: string | null | undefined) {
 
     const supabase = createClient();
     await supabase.from("unlocked_events").insert({ user_id: userId, event_id: match.id });
-    await reload();
+    await refetch();
     return { result: "ok", eventId: match.id };
   }
 
@@ -130,7 +126,7 @@ export function usePersonalData(userId: string | null | undefined) {
       supabase.from("unlocked_events").delete().eq("user_id", userId),
       supabase.from("bonus_history").delete().eq("user_id", userId),
     ]);
-    await reload();
+    await refetch();
   }
 
   return { ...data, loading, grantBonus, toggleAttending, unlockByCode, recordTicketClick, resetAll };

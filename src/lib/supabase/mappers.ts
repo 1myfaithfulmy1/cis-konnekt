@@ -114,6 +114,8 @@ export function mapFriendRow(row: FriendRow): Friend {
 export interface ProfileRow {
   id: string;
   name: string;
+  nickname: string | null;
+  avatar_url: string | null;
   starting_bonus: number;
   referral_used: boolean;
 }
@@ -122,6 +124,8 @@ export function mapProfileRow(row: ProfileRow): Profile {
   return {
     id: row.id,
     name: row.name,
+    nickname: row.nickname ?? undefined,
+    avatarUrl: row.avatar_url ?? undefined,
     startingBonus: row.starting_bonus,
     referralUsed: row.referral_used,
   };
