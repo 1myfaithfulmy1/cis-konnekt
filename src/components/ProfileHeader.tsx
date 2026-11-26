@@ -1,28 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { ru } from "@/content/ru";
 import { resizeImageToBlob } from "@/lib/image";
+import { UserAvatar } from "@/components/UserAvatar";
 import type { Profile } from "@/types";
-
-function Avatar({ profile, size = 56 }: { profile: Profile; size?: number }) {
-  const initial = profile.name.trim()[0]?.toUpperCase() ?? "?";
-  return (
-    <div
-      className="relative shrink-0 overflow-hidden rounded-full border border-border bg-surface"
-      style={{ width: size, height: size }}
-    >
-      {profile.avatarUrl ? (
-        <Image src={profile.avatarUrl} alt="" fill unoptimized className="object-cover" />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center font-display text-lg text-muted">
-          {initial}
-        </div>
-      )}
-    </div>
-  );
-}
 
 export function ProfileHeader({
   profile,
@@ -32,7 +14,7 @@ export function ProfileHeader({
   onLogout,
 }: {
   profile: Profile;
-  onUpdateProfile: (name: string, nickname: string) => Promise<void>;
+  onUpdateProfile: (name: string, nickname: string) => Promise<{ ok: boolean; error?: string }>;
   onUpdateAvatar: (file: Blob) => Promise<void>;
   onRemoveAvatar: () => Promise<void>;
   onLogout: () => void;
@@ -41,6 +23,7 @@ export function ProfileHeader({
   const [name, setName] = useState(profile.name);
   const [nickname, setNickname] = useState(profile.nickname ?? "");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [avatarError, setAvatarError] = useState<string | null>(null);
 
@@ -50,14 +33,20 @@ export function ProfileHeader({
     setName(profile.name);
     setNickname(profile.nickname ?? "");
     setAvatarError(null);
+    setSaveError(null);
     setEditing(true);
   }
 
   async function handleSave() {
     setSaving(true);
+    setSaveError(null);
     try {
-      await onUpdateProfile(name, nickname);
-      setEditing(false);
+      const result = await onUpdateProfile(name, nickname);
+      if (result.ok) {
+        setEditing(false);
+      } else {
+        setSaveError(result.error ?? null);
+      }
     } finally {
       setSaving(false);
     }
@@ -93,7 +82,7 @@ export function ProfileHeader({
     <div className="rounded-2xl border border-border bg-surface p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3">
-          <Avatar profile={profile} />
+          <UserAvatar name={profile.name} avatarUrl={profile.avatarUrl} />
           <p className="font-display text-lg text-foreground">{displayName}</p>
         </div>
         <button onClick={onLogout} className="min-h-[36px] shrink-0 text-sm text-muted underline">
@@ -104,7 +93,7 @@ export function ProfileHeader({
       {editing ? (
         <div className="mt-4 space-y-3">
           <div className="flex items-center gap-3">
-            <Avatar profile={profile} size={64} />
+            <UserAvatar name={profile.name} avatarUrl={profile.avatarUrl} size={64} />
             <div className="flex flex-1 flex-wrap gap-2">
               <label className="flex min-h-[40px] cursor-pointer items-center justify-center rounded-xl border border-border px-3 text-sm text-foreground">
                 {avatarLoading ? "Загружаю…" : profile.avatarUrl ? ru.profile.avatarReplace : ru.profile.avatarUpload}
@@ -137,8 +126,11 @@ export function ProfileHeader({
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             placeholder={ru.profile.nicknamePlaceholder}
+            required
             className="min-h-[44px] w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
           />
+
+          {saveError ? <p className="text-xs text-red-400">{saveError}</p> : null}
 
           <div className="flex gap-2">
             <button
@@ -149,7 +141,7 @@ export function ProfileHeader({
             </button>
             <button
               onClick={handleSave}
-              disabled={saving || !name.trim()}
+              disabled={saving || !name.trim() || !nickname.trim()}
               className="min-h-[44px] flex-1 rounded-xl bg-accent text-sm font-medium text-accent-ink disabled:opacity-60"
             >
               {ru.profile.saveProfile}

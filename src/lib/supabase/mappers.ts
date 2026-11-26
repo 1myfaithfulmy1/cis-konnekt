@@ -4,7 +4,7 @@
  * строк из базы в типы приложения.
  */
 
-import type { CisEvent, Organizer, Friend, Profile, Promoter } from "@/types";
+import type { CisEvent, Organizer, Friend, Profile, PublicProfile, Promoter, Message } from "@/types";
 
 export interface EventRow {
   id: string;
@@ -131,6 +131,15 @@ export function mapProfileRow(row: ProfileRow): Profile {
   };
 }
 
+export function mapPublicProfileRow(row: Pick<ProfileRow, "id" | "name" | "nickname" | "avatar_url">): PublicProfile {
+  return {
+    id: row.id,
+    name: row.name,
+    nickname: row.nickname ?? undefined,
+    avatarUrl: row.avatar_url ?? undefined,
+  };
+}
+
 export interface PromoterRow {
   id: string;
   organizer_id: string;
@@ -141,4 +150,22 @@ export interface PromoterRow {
 
 export function mapPromoterRow(row: PromoterRow): Promoter {
   return { id: row.id, organizerId: row.organizer_id, eventId: row.event_id, name: row.name, code: row.code };
+}
+
+export interface MessageRow {
+  id: string;
+  sender_id: string;
+  recipient_id: string;
+  body: string;
+  created_at: string;
+}
+
+export function mapMessageRow(row: MessageRow): Message {
+  return {
+    id: row.id,
+    senderId: row.sender_id,
+    recipientId: row.recipient_id,
+    body: row.body,
+    createdAt: row.created_at,
+  };
 }

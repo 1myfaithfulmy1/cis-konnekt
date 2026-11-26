@@ -8,6 +8,7 @@ import { ru } from "@/content/ru";
 const LINKS = [
   { href: "/", label: ru.nav.feed },
   { href: "/profile", label: ru.nav.profile },
+  { href: "/messages", label: ru.nav.messages },
   { href: "/cabinet", label: ru.nav.cabinet },
 ] as const;
 

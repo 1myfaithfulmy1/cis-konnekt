@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { mapProfileRow } from "@/lib/supabase/mappers";
 import { uploadAvatar, deleteAvatar } from "@/lib/supabase/avatar";
+import { isNicknameAvailable } from "@/lib/supabase/nickname";
+import { ru } from "@/content/ru";
 import type { Profile } from "@/types";
 
 /** Профиль текущего вошедшего пользователя (см. supabase/auth_trigger.sql — заводится сам при регистрации). */
@@ -44,15 +46,26 @@ export function useProfile(userId: string | null) {
     await refetch();
   }
 
-  /** Обновляет имя и никнейм. */
-  async function updateProfile(name: string, nickname: string) {
-    if (!userId) return;
+  /** Обновляет имя и никнейм. Никнейм обязателен и должен быть свободен. */
+  async function updateProfile(name: string, nickname: string): Promise<{ ok: boolean; error?: string }> {
+    if (!userId) return { ok: false };
+
+    const trimmedNickname = nickname.trim();
+    if (!trimmedNickname) return { ok: false, error: ru.profile.nicknameRequired };
+
+    const available = await isNicknameAvailable(trimmedNickname, userId);
+    if (!available) return { ok: false, error: ru.profile.nicknameTaken };
+
     const supabase = createClient();
-    await supabase
+    const { error } = await supabase
       .from("profiles")
-      .update({ name: name.trim(), nickname: nickname.trim() || null })
+      .update({ name: name.trim(), nickname: trimmedNickname })
       .eq("id", userId);
+
+    if (error) return { ok: false, error: ru.profile.nicknameTaken };
+
     await refetch();
+    return { ok: true };
   }
 
   async function updateAvatar(file: Blob) {

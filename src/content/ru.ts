@@ -13,6 +13,7 @@ export const ru = {
     feed: "Лента",
     profile: "Профиль",
     cabinet: "Кабинет",
+    messages: "Сообщения",
   },
 
   feed: {
@@ -68,6 +69,8 @@ export const ru = {
     signupTitle: "Регистрация",
     nameLabel: "Имя",
     namePlaceholder: "Как тебя зовут",
+    nicknameLabel: "Никнейм",
+    nicknamePlaceholder: "Уникальный, по нему тебя будут находить",
     emailLabel: "Email",
     emailPlaceholder: "you@example.com",
     passwordLabel: "Пароль",
@@ -80,6 +83,8 @@ export const ru = {
     errorGeneric: "Что-то пошло не так — попробуй ещё раз",
     errorInvalidCredentials: "Неверный email или пароль",
     errorUserExists: "Этот email уже зарегистрирован",
+    errorNicknameRequired: "Придумай никнейм",
+    errorNicknameTaken: "Этот никнейм уже занят — попробуй другой",
     loading: "Загрузка...",
   },
 
@@ -87,7 +92,9 @@ export const ru = {
     editProfile: "Изменить профиль",
     editProfileCancel: "Готово",
     nameLabel: "Имя",
-    nicknamePlaceholder: "Никнейм (необязательно)",
+    nicknamePlaceholder: "Никнейм",
+    nicknameRequired: "Придумай никнейм",
+    nicknameTaken: "Этот никнейм уже занят — попробуй другой",
     saveProfile: "Сохранить",
     avatarUpload: "Загрузить фото",
     avatarReplace: "Заменить фото",
@@ -173,5 +180,17 @@ export const ru = {
     promoterCopyLink: "Скопировать ссылку",
     promoterLinkCopied: "Ссылка скопирована",
     promoterClicks: "Клики",
+  },
+
+  messages: {
+    title: "Сообщения",
+    searchPlaceholder: "Никнейм пользователя",
+    searchSubmit: "Найти",
+    searchNotFound: "Никого с таким никнеймом нет",
+    conversationsEmpty: "Пока нет переписок — найди человека по никнейму выше",
+    messagePlaceholder: "Написать сообщение…",
+    send: "Отправить",
+    threadEmpty: "Пока нет сообщений — напиши первым(ой)",
+    backToList: "Назад к сообщениям",
   },
 } as const;

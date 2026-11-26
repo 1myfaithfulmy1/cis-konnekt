@@ -68,3 +68,20 @@ export interface Profile {
   startingBonus: number;
   referralUsed: boolean;
 }
+
+/** Чужой профиль, найденный по никнейму — для поиска собеседника в сообщениях. */
+export interface PublicProfile {
+  id: string;
+  name: string;
+  nickname?: string;
+  avatarUrl?: string;
+}
+
+/** Личное сообщение (public.messages). */
+export interface Message {
+  id: string;
+  senderId: string;
+  recipientId: string;
+  body: string;
+  createdAt: string; // ISO-дата
+}

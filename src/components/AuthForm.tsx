@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { isNicknameAvailable } from "@/lib/supabase/nickname";
 import { ru } from "@/content/ru";
 
 function translateAuthError(message: string): string {
@@ -15,6 +16,7 @@ function translateAuthError(message: string): string {
 export function AuthForm() {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [name, setName] = useState("");
+  const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -23,13 +25,27 @@ export function AuthForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setSubmitting(true);
+
+    if (mode === "signup") {
+      if (!nickname.trim()) {
+        setError(ru.auth.errorNicknameRequired);
+        return;
+      }
+      setSubmitting(true);
+      if (!(await isNicknameAvailable(nickname))) {
+        setError(ru.auth.errorNicknameTaken);
+        setSubmitting(false);
+        return;
+      }
+    } else {
+      setSubmitting(true);
+    }
 
     const supabase = createClient();
     const { error: authError } =
       mode === "login"
         ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password, options: { data: { name } } });
+        : await supabase.auth.signUp({ email, password, options: { data: { name, nickname: nickname.trim() } } });
 
     setSubmitting(false);
     if (authError) setError(translateAuthError(authError.message));
@@ -44,16 +60,28 @@ export function AuthForm() {
 
       <form onSubmit={handleSubmit} className="mt-4 space-y-3">
         {mode === "signup" ? (
-          <div>
-            <label className="mb-1 block text-xs text-muted">{ru.auth.nameLabel}</label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={ru.auth.namePlaceholder}
-              required
-              className="min-h-[44px] w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
-            />
-          </div>
+          <>
+            <div>
+              <label className="mb-1 block text-xs text-muted">{ru.auth.nameLabel}</label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={ru.auth.namePlaceholder}
+                required
+                className="min-h-[44px] w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-muted">{ru.auth.nicknameLabel}</label>
+              <input
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                placeholder={ru.auth.nicknamePlaceholder}
+                required
+                className="min-h-[44px] w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+              />
+            </div>
+          </>
         ) : null}
 
         <div>
