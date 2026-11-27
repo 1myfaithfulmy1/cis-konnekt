@@ -3,11 +3,12 @@
 /*
  * Реальные значения цветов задаются в src/config/brand.ts и подставляются
  * в тег <html> через inline-style в layout.tsx. Здесь только имена переменных —
- * их и используют классы Tailwind (bg-background, text-foreground и т.д.).
+ * их и используют классы Tailwind (bg-background, text-accent и т.д.).
  */
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-border: var(--border-color);
 
   --color-foreground: var(--foreground);
@@ -16,12 +17,120 @@
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
   --color-accent2: var(--accent2);
+  --color-cyan: var(--cyan);
 
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-onest);
   --font-display: var(--font-unbounded);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  position: relative;
+}
+
+/*
+ * Фоновое свечение — едва заметный радиальный градиент вверху экрана
+ * (неон как атмосфера, не как текст) + лёгкий шум/зерно поверх него.
+ * Оба слоя фиксированные (fixed), не мешают скроллу и кликам (pointer-events: none).
+ */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+body::before {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, color-mix(in srgb, var(--accent2) 18%, transparent), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 60%);
+}
+
+body::after {
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* Контент — поверх фоновых слоёв. */
+body > div {
+  position: relative;
+  z-index: 1;
+}
+
+/* Небольшие переиспользуемые классы для неонового свечения — используются точечно
+   (главная кнопка, активная вкладка, бейдж «Сегодня»), не на тексте целиком.
+   Названы по роли токена (accent/accent2), а не по конкретному цвету — сам
+   цвет токенов настраивается в brand.ts и может меняться. */
+.glow-accent {
+  box-shadow: 0 0 16px 0 color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.glow-accent2 {
+  box-shadow: 0 0 16px 0 color-mix(in srgb, var(--accent2) 55%, transparent);
+}
+.text-glow-accent {
+  text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 65%, transparent);
+}
+.text-glow-accent2 {
+  text-shadow: 0 0 12px color-mix(in srgb, var(--accent2) 65%, transparent);
+}
+
+/* Пульсация для «живой» точки у событий «сегодня/сейчас». */
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+.pulse-dot {
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+/* Chrome красит автозаполненные поля в свой светлый цвет — возвращаем тёмный фон темы. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--foreground);
+  -webkit-box-shadow: 0 0 0px 1000px var(--surface-2) inset;
+  box-shadow: 0 0 0px 1000px var(--surface-2) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* Короткая вспышка свечения — момент разблокировки закрытого ивента по коду. */
+@keyframes unlock-glow {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent2) 0%, transparent);
+  }
+  30% {
+    box-shadow: 0 0 24px 4px color-mix(in srgb, var(--accent2) 70%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent2) 0%, transparent);
+  }
+}
+.unlock-flash {
+  animation: unlock-glow 700ms ease-out;
+}
+
+/* Уважаем «уменьшить анимацию» — выключаем пульсацию и свечение-анимации. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .pulse-dot {
+    animation: none !important;
+    opacity: 0.75;
+  }
+  .unlock-flash {
+    animation: none !important;
+  }
 }

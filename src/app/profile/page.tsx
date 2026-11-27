@@ -102,9 +102,12 @@ function LoggedInProfile({ userId }: { userId: string }) {
         onLogout={handleLogout}
       />
 
-      <div className="rounded-2xl border border-border bg-surface p-4">
-        <p className="text-2xl font-semibold text-accent">
-          {balance} <span className="text-sm font-normal text-muted">{ru.profile.balanceLabel}</span>
+      <div className="rounded-2xl border border-border bg-surface p-5">
+        <p className="flex items-baseline gap-2">
+          <span className="bg-[image:var(--gradient-sunset)] bg-clip-text font-display text-5xl text-transparent drop-shadow-[0_0_18px_var(--accent)]">
+            {balance}
+          </span>
+          <span className="text-sm text-muted">{ru.profile.balanceLabel}</span>
         </p>
       </div>
 
@@ -116,7 +119,7 @@ function LoggedInProfile({ userId }: { userId: string }) {
       <div className="rounded-2xl border border-border bg-surface p-4">
         <button
           onClick={handleInvite}
-          className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-accent text-sm font-medium text-accent-ink"
+          className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-accent text-sm font-medium text-accent-ink transition-transform duration-150 active:scale-[0.98]"
         >
           {ru.profile.inviteButton}
           <span className="rounded-full bg-accent-ink/10 px-2 py-0.5 text-xs">{ru.profile.inviteDemoBadge}</span>

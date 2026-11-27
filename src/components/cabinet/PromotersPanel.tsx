@@ -59,13 +59,13 @@ export function PromotersPanel({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={ru.cabinet.promoterNamePlaceholder}
-              className="min-h-[44px] w-full rounded-xl border border-border bg-surface px-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+              className="min-h-[44px] w-full rounded-xl border border-border bg-surface-2 px-3 text-sm text-foreground placeholder:text-muted transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
             />
             <div className="flex gap-2">
               <select
                 value={eventId}
                 onChange={(e) => setEventId(e.target.value)}
-                className="min-h-[44px] flex-1 rounded-xl border border-border bg-surface px-3 text-sm text-foreground"
+                className="min-h-[44px] flex-1 rounded-xl border border-border bg-surface-2 px-3 text-sm text-foreground transition-colors duration-150 focus:border-accent"
               >
                 {myEvents.map((e) => (
                   <option key={e.id} value={e.id}>
@@ -75,7 +75,7 @@ export function PromotersPanel({
               </select>
               <button
                 type="submit"
-                className="min-h-[44px] rounded-xl bg-accent px-4 text-sm font-medium text-accent-ink"
+                className="min-h-[44px] rounded-xl bg-accent px-4 text-sm font-medium text-accent-ink transition-transform duration-150 active:scale-[0.98]"
               >
                 {ru.cabinet.promoterAdd}
               </button>

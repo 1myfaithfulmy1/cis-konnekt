@@ -79,8 +79,8 @@ function FeedContent() {
             <button
               key={t.value}
               onClick={() => setTab(t.value)}
-              className={`min-h-[40px] flex-1 rounded-xl text-xs font-medium transition-colors duration-150 ${
-                tab === t.value ? "bg-accent text-accent-ink" : "bg-surface text-muted"
+              className={`min-h-[40px] flex-1 rounded-xl text-xs font-medium transition-[background-color,box-shadow] duration-200 ${
+                tab === t.value ? "glow-accent bg-accent text-accent-ink" : "bg-surface text-muted"
               }`}
             >
               {t.label}
@@ -118,7 +118,7 @@ function FeedContent() {
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
           {visibleEvents.map((event) =>
             event.isPrivate && !openedEventIds.includes(event.id) ? (
-              <LockedEventCard key={event.id} />
+              <LockedEventCard key={event.id} genre={event.genre} />
             ) : (
               <EventCard key={event.id} event={event} friends={friends} />
             )

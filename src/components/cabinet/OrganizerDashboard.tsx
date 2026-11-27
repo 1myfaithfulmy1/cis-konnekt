@@ -49,7 +49,7 @@ export function OrganizerDashboard({ organizer }: { organizer: Organizer }) {
           <p className="text-sm font-medium text-foreground">{ru.cabinet.myEventsTitle}</p>
           <Link
             href="/cabinet/event/new"
-            className="min-h-[36px] rounded-xl bg-accent px-3 py-1.5 text-xs font-medium text-accent-ink"
+            className="min-h-[36px] rounded-xl bg-accent px-3 py-1.5 text-xs font-medium text-accent-ink transition-transform duration-150 active:scale-[0.98]"
           >
             {ru.cabinet.createEvent}
           </Link>
@@ -74,15 +74,15 @@ export function OrganizerDashboard({ organizer }: { organizer: Organizer }) {
                   </p>
 
                   <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-lg bg-background py-2">
+                    <div className="rounded-lg bg-surface-2 py-2">
                       <p className="text-base font-semibold text-foreground">{views}</p>
                       <p className="text-[11px] text-muted">{ru.cabinet.statsViews}</p>
                     </div>
-                    <div className="rounded-lg bg-background py-2">
+                    <div className="rounded-lg bg-surface-2 py-2">
                       <p className="text-base font-semibold text-foreground">{clicks}</p>
                       <p className="text-[11px] text-muted">{ru.cabinet.statsClicks}</p>
                     </div>
-                    <div className="rounded-lg bg-background py-2">
+                    <div className="rounded-lg bg-surface-2 py-2">
                       <p className="text-base font-semibold text-foreground">{going}</p>
                       <p className="text-[11px] text-muted">{ru.cabinet.statsGoing}</p>
                     </div>

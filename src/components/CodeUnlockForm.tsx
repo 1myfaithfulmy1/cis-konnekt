@@ -36,16 +36,19 @@ export function CodeUnlockForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
       <p className="text-sm font-medium text-foreground">{ru.profile.codeTitle}</p>
-      <div className="flex gap-2">
+      <div
+        key={message ? `${message.kind}-${message.text}-${message.eventId ?? ""}` : "idle"}
+        className={`flex gap-2 rounded-xl ${message?.kind === "success" ? "unlock-flash" : ""}`}
+      >
         <input
           value={code}
           onChange={(e) => setCode(e.target.value)}
           placeholder={ru.profile.codePlaceholder}
-          className="min-h-[44px] flex-1 rounded-xl border border-border bg-surface px-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+          className="min-h-[44px] flex-1 rounded-xl border border-border bg-surface-2 px-3 text-sm text-foreground placeholder:text-muted transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         />
         <button
           type="submit"
-          className="min-h-[44px] rounded-xl bg-accent px-4 text-sm font-medium text-accent-ink"
+          className="min-h-[44px] rounded-xl bg-accent px-4 text-sm font-medium text-accent-ink transition-transform duration-150 active:scale-[0.98]"
         >
           {ru.profile.codeSubmit}
         </button>

@@ -17,7 +17,7 @@ export function SelectField({
         aria-label={ariaLabel}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full appearance-none truncate rounded-xl border border-border bg-surface py-2.5 pl-3 pr-7 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+        className="w-full appearance-none truncate rounded-xl border border-border bg-surface-2 py-2.5 pl-3 pr-7 text-xs text-foreground transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>

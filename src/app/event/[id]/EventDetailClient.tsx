@@ -47,7 +47,7 @@ function EventDetailContent({ id }: { id: string }) {
   if (!event) return <EventNotFoundNotice />;
 
   const isLocked = event.isPrivate && !personal.openedEventIds.includes(event.id);
-  if (isLocked) return <LockedEventNotice />;
+  if (isLocked) return <LockedEventNotice genre={event.genre} />;
 
   return (
     <EventDetailView
@@ -204,7 +204,7 @@ function EventDetailView({
 
           <button
             onClick={handleBuyTicket}
-            className="mt-3 min-h-[52px] w-full rounded-xl bg-accent text-sm font-medium text-accent-ink transition-transform duration-150 active:scale-[0.98]"
+            className="glow-accent mt-3 min-h-[52px] w-full rounded-xl bg-[image:var(--gradient-sunset)] text-sm font-medium text-accent-ink transition-transform duration-150 active:scale-[0.98]"
           >
             {event.price === 0 ? ru.event.signUpFree : ru.event.buyTicket}
           </button>
@@ -212,10 +212,10 @@ function EventDetailView({
 
           <button
             onClick={handleToggleAttend}
-            className={`mt-2 min-h-[48px] w-full rounded-xl border text-sm font-medium transition-colors duration-150 ${
+            className={`mt-2 min-h-[48px] w-full rounded-xl border text-sm font-medium transition-[background-color,box-shadow] duration-200 active:scale-[0.98] ${
               youGoing
-                ? "border-accent2 bg-accent2 text-foreground"
-                : "border-border text-foreground"
+                ? "glow-accent2 border-accent2 bg-accent2 text-accent-ink"
+                : "border-accent2 bg-transparent text-accent2"
             }`}
           >
             {youGoing ? ru.event.attending : ru.event.attend}

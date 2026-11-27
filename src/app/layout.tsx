@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Unbounded, Inter } from "next/font/google";
+import { Unbounded, Onest } from "next/font/google";
 import "./globals.css";
 import { brand, brandCssVars } from "@/config/brand";
 import { BottomTabBar } from "@/components/BottomTabBar";
@@ -10,8 +10,12 @@ const unbounded = Unbounded({
   subsets: ["cyrillic", "latin"],
 });
 
-const inter = Inter({
-  variable: "--font-inter",
+// Onest — выбран для основного текста вместо Inter: тоже отлично читается
+// и поддерживает кириллицу, но у него чуть более округлый, «дизайнерский»
+// характер, который лучше сочетается с жирным Unbounded в заголовках и
+// больше подходит молодёжному неоновому стилю, чем нейтральный Inter.
+const onest = Onest({
+  variable: "--font-onest",
   subsets: ["cyrillic", "latin"],
 });
 
@@ -30,7 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ru"
-      className={`${unbounded.variable} ${inter.variable}`}
+      className={`${unbounded.variable} ${onest.variable}`}
       style={brandCssVars()}
     >
       <body className="bg-background font-sans antialiased">

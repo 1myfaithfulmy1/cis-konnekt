@@ -2,6 +2,7 @@ import Link from "next/link";
 import { GENRE_META } from "@/data/genres";
 import { EventCover } from "@/components/EventCover";
 import { FriendAvatarStack } from "@/components/FriendAvatarStack";
+import { LiveDot } from "@/components/LiveDot";
 import { formatEventWhen } from "@/lib/dates";
 import { formatGoingLabel, formatPrice } from "@/lib/format";
 import type { CisEvent, Friend } from "@/types";
@@ -12,7 +13,7 @@ export function EventCard({ event, friends }: { event: CisEvent; friends: Friend
   return (
     <Link
       href={`/event/${event.id}`}
-      className="block overflow-hidden rounded-2xl border border-border bg-surface transition-transform duration-150 active:scale-[0.98]"
+      className="block overflow-hidden rounded-2xl border border-border bg-surface transition-[transform,box-shadow,border-color] duration-200 active:scale-[0.98] active:border-accent active:shadow-[0_0_20px_-6px_var(--accent)]"
     >
       <EventCover
         genre={event.genre}
@@ -23,7 +24,10 @@ export function EventCard({ event, friends }: { event: CisEvent; friends: Friend
 
       <div className="space-y-2 p-4">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-sm text-muted">{formatEventWhen(event)}</span>
+          <span className="flex items-center gap-1.5 text-sm text-muted">
+            {event.dayOffset === 0 ? <LiveDot /> : null}
+            {formatEventWhen(event)}
+          </span>
           {event.age18Plus ? (
             <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-xs text-muted">
               18+

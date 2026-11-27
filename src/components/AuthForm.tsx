@@ -68,7 +68,7 @@ export function AuthForm() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder={ru.auth.namePlaceholder}
                 required
-                className="min-h-[44px] w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+                className="min-h-[44px] w-full rounded-xl border border-border bg-surface-2 px-3 text-sm text-foreground placeholder:text-muted transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
             <div>
@@ -78,7 +78,7 @@ export function AuthForm() {
                 onChange={(e) => setNickname(e.target.value)}
                 placeholder={ru.auth.nicknamePlaceholder}
                 required
-                className="min-h-[44px] w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+                className="min-h-[44px] w-full rounded-xl border border-border bg-surface-2 px-3 text-sm text-foreground placeholder:text-muted transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
           </>
@@ -92,7 +92,7 @@ export function AuthForm() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder={ru.auth.emailPlaceholder}
             required
-            className="min-h-[44px] w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+            className="min-h-[44px] w-full rounded-xl border border-border bg-surface-2 px-3 text-sm text-foreground placeholder:text-muted transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
 
@@ -105,7 +105,7 @@ export function AuthForm() {
             placeholder={ru.auth.passwordPlaceholder}
             minLength={6}
             required
-            className="min-h-[44px] w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+            className="min-h-[44px] w-full rounded-xl border border-border bg-surface-2 px-3 text-sm text-foreground placeholder:text-muted transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
 
@@ -114,7 +114,7 @@ export function AuthForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="min-h-[48px] w-full rounded-xl bg-accent text-sm font-medium text-accent-ink transition-opacity duration-150 disabled:opacity-60"
+          className="glow-accent min-h-[48px] w-full rounded-xl bg-[image:var(--gradient-sunset)] text-sm font-medium text-accent-ink transition-[opacity,transform] duration-150 active:scale-[0.98] disabled:opacity-60"
         >
           {submitting ? ru.auth.loading : mode === "login" ? ru.auth.submitLogin : ru.auth.submitSignup}
         </button>

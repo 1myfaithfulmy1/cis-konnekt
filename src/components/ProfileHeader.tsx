@@ -118,7 +118,7 @@ export function ProfileHeader({
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="min-h-[44px] w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+              className="min-h-[44px] w-full rounded-xl border border-border bg-surface-2 px-3 text-sm text-foreground transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </label>
 
@@ -127,7 +127,7 @@ export function ProfileHeader({
             onChange={(e) => setNickname(e.target.value)}
             placeholder={ru.profile.nicknamePlaceholder}
             required
-            className="min-h-[44px] w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+            className="min-h-[44px] w-full rounded-xl border border-border bg-surface-2 px-3 text-sm text-foreground placeholder:text-muted transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
           />
 
           {saveError ? <p className="text-xs text-red-400">{saveError}</p> : null}
@@ -142,7 +142,7 @@ export function ProfileHeader({
             <button
               onClick={handleSave}
               disabled={saving || !name.trim() || !nickname.trim()}
-              className="min-h-[44px] flex-1 rounded-xl bg-accent text-sm font-medium text-accent-ink disabled:opacity-60"
+              className="min-h-[44px] flex-1 rounded-xl bg-accent text-sm font-medium text-accent-ink transition-transform duration-150 active:scale-[0.98] disabled:opacity-60"
             >
               {ru.profile.saveProfile}
             </button>

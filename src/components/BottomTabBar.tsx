@@ -16,7 +16,7 @@ export function BottomTabBar() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex shrink-0 border-t border-border bg-surface md:hidden">
+    <nav className="flex shrink-0 border-t border-border bg-surface/70 backdrop-blur-md md:hidden">
       {TABS.map((tab) => {
         // "Лента" активна только на самой главной, остальные — по началу пути
         const isActive =
@@ -32,7 +32,7 @@ export function BottomTabBar() {
             <Icon
               size={22}
               strokeWidth={isActive ? 2.25 : 1.75}
-              className={isActive ? "text-accent" : "text-muted"}
+              className={isActive ? "text-accent drop-shadow-[0_0_6px_var(--accent)]" : "text-muted"}
             />
             <span
               className={`text-xs ${isActive ? "text-accent" : "text-muted"}`}

@@ -26,12 +26,12 @@ export function CreateOrganizerForm({ onCreate }: { onCreate: (name: string) => 
           onChange={(e) => setName(e.target.value)}
           placeholder={ru.cabinet.createOrgNamePlaceholder}
           required
-          className="min-h-[44px] w-full rounded-xl border border-border bg-surface px-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+          className="min-h-[44px] w-full rounded-xl border border-border bg-surface-2 px-3 text-sm text-foreground placeholder:text-muted transition-colors duration-150 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         />
         <button
           type="submit"
           disabled={submitting}
-          className="min-h-[48px] w-full rounded-xl bg-accent text-sm font-medium text-accent-ink transition-opacity duration-150 disabled:opacity-60"
+          className="min-h-[48px] w-full rounded-xl bg-accent text-sm font-medium text-accent-ink transition-[opacity,transform] duration-150 active:scale-[0.98] disabled:opacity-60"
         >
           {ru.cabinet.createOrgSubmit}
         </button>
